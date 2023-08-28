@@ -47,18 +47,18 @@ class trainer:
         context=self.vec_model.vector[training_data[1]][1]
         result= word2vec.dot(main,context)
         result= word2vec.sigmoid(result)
-        error=int(training_data[2])-result
+        error=float(training_data[2])-result
         error_to_vector=(2*error)*result*(1-result)
 
         #adjust the main vector
         for i in range(len(main)):
-            self.adjust[training_data[0]][0][i]+=error_to_vector*context[i]*self.learning*-1
+            self.adjust[training_data[0]][0][i]+=(error_to_vector*context[i]*self.learning*-1)
 
         #adjust in the context vector
         for i in range(len(context)):
-            self.adjust[training_data[1]][1][i]=error_to_vector*main[i]*self.learning*-1
+            self.adjust[training_data[1]][1][i]=(error_to_vector*main[i]*self.learning*-1)
 
-        return (error**2)
+        return (math.pow(error,2))
 
     def epoch(self,dataset,batch_size):
         sub_set=[]
@@ -69,7 +69,7 @@ class trainer:
 
         for i in sub_set:
             average_error+=self.learn_single_input(i)
-
+        
         for i in self.adjust:
             for j in range(len(self.adjust[i])):
                 for k in range(len(self.adjust[i][j])):
@@ -79,6 +79,8 @@ class trainer:
             for j in range(len(self.adjust[i])):
                 for k in range(len(self.adjust[i][j])):
                     self.vec_model.vector[i][j][k]+=self.adjust[i][j][k]
+                    self.adjust[i][j][k]=0
+                        
 
         print("average_error", average_error/batch_size)
 
